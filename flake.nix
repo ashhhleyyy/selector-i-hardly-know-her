@@ -13,7 +13,12 @@
   };
 
   outputs = { self, nixpkgs, crane, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+    {
+      overlays.default = final: prev: {
+        inherit (self.packages.${prev.system}) selector;
+      };
+      nixosModules.selector = import ./nixos.nix;
+    } // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
@@ -38,7 +43,8 @@
           inherit selector;
         };
 
-        packages.default = selector;
+        packages.selector = selector;
+        packages.default = self.packages.${system}.selector;
 
         apps.default = flake-utils.lib.mkApp {
           drv = selector;
