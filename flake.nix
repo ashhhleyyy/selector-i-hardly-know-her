@@ -8,11 +8,12 @@
       url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    rust-overlay.url = "github:oxalica/rust-overlay";
 
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, crane, flake-utils, ... }:
+  outputs = { self, nixpkgs, crane, rust-overlay, flake-utils, ... }:
     {
       overlays.default = final: prev: {
         inherit (self.packages.${prev.system}) selector;
@@ -20,8 +21,14 @@
       nixosModules.selector = import ./nixos.nix;
     } // flake-utils.lib.eachDefaultSystem (system:
       let
+        overlays = [ (import rust-overlay) ];
         pkgs = import nixpkgs {
-          inherit system;
+          inherit system overlays;
+        };
+
+        rust-toolchain = pkgs.rust-bin.stable.latest.default;
+        rust-dev-toolchain = pkgs.rust-bin.stable.latest.default.override {
+          extensions = [ "rust-src" "rust-analyzer" ];
         };
 
         deps = with pkgs; [
@@ -31,7 +38,7 @@
           pkgs.libiconv
         ];
 
-        craneLib = crane.lib.${system};
+        craneLib = (crane.mkLib pkgs).overrideToolchain rust-toolchain;
         selector = craneLib.buildPackage {
           src = craneLib.cleanCargoSource (craneLib.path ./.);
 
@@ -54,9 +61,9 @@
           checks = self.checks.${system};
 
           packages = with pkgs; [
-            rust-analyzer
             mpv
             ffmpeg_6
+            rust-dev-toolchain
           ] ++ deps;
         };
       });
