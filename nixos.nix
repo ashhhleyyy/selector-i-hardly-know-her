@@ -8,7 +8,7 @@ let
     "--client-name" cfg.clientName
     "--listen-port" cfg.port
     "--channels" cfg.channels
-  ] ++ concatMap (i: ["--input" i]) cfg.inputs);
+  ] ++ concatMap (i: ["--input" i]) cfg.inputs;
 in
 {
   options.services.jack-selector = {
