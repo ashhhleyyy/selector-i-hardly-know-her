@@ -43,7 +43,7 @@ in
       serviceConfig = {
         Type = "simple";
         ExecStart = "${pkgs.selector}/bin/selector-i-hardly-know-her ${escapeShellArgs selectorArgs}";
-        User = "jackaudio";
+        User = cfg.user;
       };
     };
   };
