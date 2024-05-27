@@ -13,6 +13,7 @@ in
 {
   options.services.jack-selector = {
     enable = mkEnableOption "Jack Selector";
+    package = mkPackageOption pkgs "selector" {};
     user = mkOption {
       type = types.str;
       default = "jackaudio";
@@ -42,7 +43,7 @@ in
 
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${pkgs.selector}/bin/selector-i-hardly-know-her ${escapeShellArgs selectorArgs}";
+        ExecStart = "${cfg.package}/bin/selector-i-hardly-know-her ${escapeShellArgs selectorArgs}";
         User = cfg.user;
       };
     };
